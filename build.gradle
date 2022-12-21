@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'net.dv8tion:JDA:5.0.0-alpha.16'
+    compileOnly 'org.mongodb:mongodb-driver-sync:4.0.5'
+    compileOnly 'org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT'
+    compileOnly 'net.luckperms:api:5.4'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'com.google.code.gson:gson:2.10'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+}
+
+group = 'com.hrens'
+version = '0.1.7-alpha'
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

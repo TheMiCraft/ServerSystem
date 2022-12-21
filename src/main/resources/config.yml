@@ -1,0 +1,64 @@
+# The Prefix before every Message sent by the ServerSystem
+prefix: '§l§2TheMaCraft: §7'
+
+# The Name of the Server
+server: server
+
+# Activity Discord
+activity: 'on TheMaCrafts Community'
+
+# Is the Server in a BungeeCord network
+bungeecord: false
+
+modules:
+  mcchat:
+    # Enables the Minecraft-Discord chat in the discord server.
+    enabled: false
+
+    # The token of the Bot who will send and recieve the messages.
+    token: ''
+
+    # The ChannelID of the channel on the discord server, in which the Minecraft messages will be sent.
+    chatid: '0000000000000000000'
+
+  playtime:
+    # Enables the playtime detection with MongoDB
+    enabled: false
+
+    # The time until the Server recognizes the player as AFK if he is not moving.
+    afktime: 180000
+
+  bansystem:
+    # Enables the ban system.
+    enabled: false
+
+mongodb:
+  # The URL for the connection to the MongoDB database.
+  mongourl: 'url'
+
+  # The Database of the ServerSystem
+  database: 'database'
+
+  # The Collection which is used for the Playtime (if enabled).
+  playtime: 'collection'
+
+  # The Collection which is used for the BanSystem (if enabled).
+  bans: 'bans'
+
+ban:
+  '1':
+    time: 60000
+    reason: 'eine Minute'
+    permission: ban.1
+
+banids:
+  - 1
+
+mute:
+  '1':
+    time: 60000
+    reason: eine Minute
+    permission: ban.1
+
+muteids:
+  - 1
