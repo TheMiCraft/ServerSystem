@@ -7,31 +7,23 @@ commands:
   heal:
     description: Heal Command
     permission: serversystem.heal
-    usage: '/heal [name]'
   feed:
     description: Feed Command
     permission: serversystem.feed
-    usage: '/feed [name]'
   reboot:
     description: Reboot Command
     permission: serversystem.restart
-    usage: '/reboot'
   ban:
     description: Ban Command
-    usage: '/ban [name] [ID]'
   unban:
     description: Unban Command
-    usage: '/unban [ID]'
   mute:
     description: Mute Command
-    usage: '/mute [name] [ID]'
   unmute:
     description: Unmute Command
-    usage: '/unmute [ID]'
   check:
     description: Check Command
     permission: serversystem.check
-    usage: '/check [name;UUID;ID]'
 api-version: 1.19
 depend:
   - LuckPerms

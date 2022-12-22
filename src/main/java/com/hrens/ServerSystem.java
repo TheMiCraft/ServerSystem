@@ -30,6 +30,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -62,7 +63,14 @@ public class ServerSystem extends JavaPlugin {
         if (provider != null) {
             lpapi = provider.getProvider();
         }
-        messageConfig = new MessageConfig(this, "messages.yml");
+        getLogger().info("Loading Config...");
+        saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+        FileConfiguration cfg = getConfig();
+        cfg.options().copyDefaults(true);
+        saveConfig();
+        getLogger().info("Config loaded");
+        messageConfig = new MessageConfig(this, getConfig().getString("messages"));
         map = new HashMap<>();
         afk = new HashMap<>();
         lastmove = new HashMap<>();
@@ -71,13 +79,6 @@ public class ServerSystem extends JavaPlugin {
             lastmove.put(player, System.currentTimeMillis());
             afk.put(player.getUniqueId(), 0L);
         }
-        getLogger().info("Loading Config...");
-        saveDefaultConfig();
-        getConfig().options().copyDefaults(true);
-        FileConfiguration cfg = getConfig();
-        cfg.options().copyDefaults(true);
-        saveConfig();
-        getLogger().info("Config loaded");
         module_mcchat = getConfig().getBoolean("modules.mcchat.enabled");
         module_playtime = getConfig().getBoolean("modules.playtime.enabled");
         module_bansystem = getConfig().getBoolean("modules.bansystem.enabled");

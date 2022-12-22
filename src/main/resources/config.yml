@@ -10,6 +10,9 @@ activity: 'on TheMaCrafts Community'
 # Is the Server in a BungeeCord network
 bungeecord: false
 
+# The file which is used for the messages.
+messages: en-EN-messages.yml
+
 modules:
   mcchat:
     # Enables the Minecraft-Discord chat in the discord server.

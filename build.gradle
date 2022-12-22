@@ -19,7 +19,7 @@ dependencies {
 }
 
 group = 'com.hrens'
-version = '0.1.7-alpha'
+version = '0.1.0'
 
 compileJava.options.encoding = 'UTF-8'
 
