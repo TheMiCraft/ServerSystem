@@ -47,6 +47,7 @@ public class ServerSystem extends JavaPlugin {
     public boolean module_mcchat;
     public boolean module_playtime;
     public boolean module_bansystem;
+    public boolean luckperms = false;
     public boolean bungeecord;
     MessageConfig messageConfig;
     LuckPerms lpapi;
@@ -59,10 +60,6 @@ public class ServerSystem extends JavaPlugin {
     public void onEnable() {
         getLogger().info("Loading ServerSystem...");
         instance = this;
-        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-        if (provider != null) {
-            lpapi = provider.getProvider();
-        }
         getLogger().info("Loading Config...");
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
@@ -95,6 +92,13 @@ public class ServerSystem extends JavaPlugin {
         getCommand("heal").setExecutor(new HealCommand(this));
         getCommand("feed").setExecutor(new FeedCommand(this));
         getCommand("reboot").setExecutor(new RebootCommand(this));
+        if(Objects.nonNull(pluginManager.getPlugin("LuckPerms"))) {
+            luckperms = true;
+            RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+            if (provider != null) {
+                lpapi = provider.getProvider();
+            }
+        }
         if(module_mcchat) initMCChat();
         if(module_playtime) initPlaytime();
         if(module_bansystem) initBanSystem();

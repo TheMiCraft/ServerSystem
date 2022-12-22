@@ -36,8 +36,12 @@ public class ChatEvent implements Listener {
                     .replace("{reason}", serverSystem.getConfig().getString("mute." + document.getInteger("reason") + ".reason"))
                     .replace("{date}", s));
         } else {
-            String prefix = serverSystem.getLPAPI().getUserManager().getUser(p.getUniqueId()).getCachedData().getMetaData().getPrefix();
-            String suffix = serverSystem.getLPAPI().getUserManager().getUser(p.getUniqueId()).getCachedData().getMetaData().getSuffix();
+            String prefix = "";
+            String suffix = "";
+            if(serverSystem.luckperms) {
+                prefix = serverSystem.getLPAPI().getUserManager().getUser(p.getUniqueId()).getCachedData().getMetaData().getPrefix();
+                suffix = serverSystem.getLPAPI().getUserManager().getUser(p.getUniqueId()).getCachedData().getMetaData().getSuffix();
+            }
             e.setFormat(prefix + p.getName() + suffix + ": " + e.getMessage());
             e.setFormat(serverSystem.getMessage("chatformat")
                     .replace("{pf}", Objects.nonNull(prefix) ? prefix : "")

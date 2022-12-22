@@ -3,6 +3,7 @@ description: 'A ServerSystem with a lot of functions and modules.'
 author: 'TheMiCraft'
 version: '0.1'
 main: com.hrens.ServerSystem
+api-version: 1.19
 commands:
   heal:
     description: Heal Command
@@ -24,8 +25,7 @@ commands:
   check:
     description: Check Command
     permission: serversystem.check
-api-version: 1.19
-depend:
+softdepend:
   - LuckPerms
 libraries:
   - net.dv8tion:JDA:5.0.0-alpha.16
