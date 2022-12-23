@@ -8,35 +8,28 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public abstract class FileConfig {
+public class PlaytimeConfig {
 
     private File file;
 
     private File dir;
 
-    ArrayList<String> files;
-
     private YamlConfiguration yaml;
 
-    FileConfig(JavaPlugin plugin, String name) {
-        files = new ArrayList<>();
-        files.add("de-DE-messages.yml");
-        files.add("en-EN-messages.yml");
+    public PlaytimeConfig(JavaPlugin plugin, String name) {
         dir = plugin.getDataFolder();
-
 
         if(!dir.exists()) {
             dir.mkdirs();
         }
 
-        for (String sf : files) {
-            if (!new File(dir, name).exists()) {
-                plugin.saveResource(sf, false);
-            }
+        file = new File(dir, name);
+
+        if (!file.exists()) {
+            plugin.saveResource(file.getName(), false);
         }
 
         yaml = new YamlConfiguration();
-        file = new File(dir, name);
         try {
             yaml.load(file);
         } catch (IOException | InvalidConfigurationException e) {

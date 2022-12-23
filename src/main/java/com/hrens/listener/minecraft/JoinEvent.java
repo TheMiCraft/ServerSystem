@@ -47,12 +47,7 @@ public class JoinEvent implements Listener {
                                 .setColor(Color.GREEN)
                                 .build()).queue();
             }
-            if (serverSystem.module_playtime) {
-                Player player = p;
-                serverSystem.getMap().put(player.getUniqueId(), System.currentTimeMillis());
-                serverSystem.getLastMove().put(player, System.currentTimeMillis());
-                serverSystem.getAFK().put(player.getUniqueId(), 0L);
-            }
+            if (serverSystem.module_playtime) serverSystem.getPlaytimeUtils().playerJoin(p.getUniqueId());
         }
     }
 }

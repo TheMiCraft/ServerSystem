@@ -7,9 +7,7 @@ import com.hrens.commands.tabcompleters.UnbanCompleter;
 import com.hrens.commands.tabcompleters.UnmuteCompleter;
 import com.hrens.listener.discord.MessageRecieveEvent;
 import com.hrens.listener.minecraft.*;
-import com.hrens.utils.BanManager;
-import com.hrens.utils.LogManager;
-import com.hrens.utils.MessageConfig;
+import com.hrens.utils.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
@@ -24,26 +22,23 @@ import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.security.auth.login.LoginException;
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Objects;
-import java.util.UUID;
+
 @Getter
 public class ServerSystem extends JavaPlugin {
     JDA jda;
     MongoClient mongoClient;
+    Connection connection;
     MongoDatabase mongoDatabase;
     static String prefix;
-    Map<UUID, Long> map;
-    Map<UUID, Long> afk;
-    Map<Player, Long> lastmove;
     public boolean module_mcchat;
     public boolean module_playtime;
     public boolean module_bansystem;
@@ -56,6 +51,10 @@ public class ServerSystem extends JavaPlugin {
     public static ServerSystem instance;
     private LogManager logManager;
     private BanManager banManager;
+    PlaytimeUtils playtimeUtils;
+    StorageType storageType;
+    private PlaytimeConfig fileDB;
+
     @Override
     public void onEnable() {
         getLogger().info("Loading ServerSystem...");
@@ -67,25 +66,25 @@ public class ServerSystem extends JavaPlugin {
         cfg.options().copyDefaults(true);
         saveConfig();
         getLogger().info("Config loaded");
-        messageConfig = new MessageConfig(this, getConfig().getString("messages"));
-        map = new HashMap<>();
-        afk = new HashMap<>();
-        lastmove = new HashMap<>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            map.put(player.getUniqueId(), System.currentTimeMillis());
-            lastmove.put(player, System.currentTimeMillis());
-            afk.put(player.getUniqueId(), 0L);
+        storageType = StorageType.fromString(getConfig().getString("storagetype"));
+        assert storageType != null;
+        if(storageType.equals(StorageType.MongoDB)){
+            initMongoDB();
+        } else if(storageType.equals(StorageType.MySQL)){
+            this.connection = initMySQL();
+        } else if(storageType.equals(StorageType.File)){
+            this.fileDB = initFileDatabase();
         }
+        this.mongoClient = MongoClients.create(Objects.requireNonNull(getConfig().getString("mongodb.mongourl")));
+        this.mongoDatabase = mongoClient.getDatabase(Objects.requireNonNull(getConfig().getString("mongodb.database")));
+        messageConfig = new MessageConfig(this, getConfig().getString("messages"));
         module_mcchat = getConfig().getBoolean("modules.mcchat.enabled");
         module_playtime = getConfig().getBoolean("modules.playtime.enabled");
         module_bansystem = getConfig().getBoolean("modules.bansystem.enabled");
         bungeecord = getConfig().getBoolean("bungeecord");
         prefix = getConfig().getString("prefix");
-        getLogger().info("Connecting to Database");
-        mongoClient = MongoClients.create(Objects.requireNonNull(getConfig().getString("mongodb.mongourl")));
-        mongoDatabase = mongoClient.getDatabase(Objects.requireNonNull(getConfig().getString("mongodb.database")));
-        getLogger().info("Connected to Database");
-        PluginManager pluginManager = Bukkit.getPluginManager();
+        pluginManager = Bukkit.getPluginManager();
+
         pluginManager.registerEvents(new JoinEvent(this), this);
         pluginManager.registerEvents(new LeaveEvent(this), this);
         pluginManager.registerEvents(new ChatEvent(this), this);
@@ -101,42 +100,10 @@ public class ServerSystem extends JavaPlugin {
         }
         if(module_mcchat) initMCChat();
         if(module_playtime) initPlaytime();
+        if(module_playtime) playtimeUtils.reload(Bukkit.getOnlinePlayers());
         if(module_bansystem) initBanSystem();
         if(bungeecord) getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getLogger().info("Loaded Serversystem");
-    }
-
-
-    public Map<UUID, Long> getMap() {
-        return map;
-    }
-
-    public Map<UUID, Long> getAFK() {
-        return afk;
-    }
-
-    public MongoDatabase getMongoDatabase() {
-        return mongoDatabase;
-    }
-
-    public JDA getJDA() {
-        return jda;
-    }
-
-    public Map<Player, Long> getLastMove() {
-        return lastmove;
-    }
-
-    public static String getPrefix() {
-        return prefix;
-    }
-
-    public LuckPerms getLPAPI() {
-        return lpapi;
-    }
-
-    public String getMessage(String path) {
-        return messageConfig.getYaml().getString(path).replace("{prefix}", getPrefix()).replace("\\n", System.lineSeparator());
     }
 
     public void initBanSystem(){
@@ -175,6 +142,70 @@ public class ServerSystem extends JavaPlugin {
     }
 
     public void initPlaytime(){
+        System.out.println(4566);
+        this.playtimeUtils = new PlaytimeUtils(getConfig().getString("server"), storageType, mongoDatabase, connection, fileDB, getConfig().getString("mysql.DB_NAME"));
         pluginManager.registerEvents(new MoveEvent(this), this);
+    }
+    public enum StorageType {
+        MongoDB, File, MySQL;
+
+        public static StorageType fromString(String input) {
+            for (StorageType type : StorageType.values()) {
+                if (type.name().equalsIgnoreCase(input)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+    }
+    private Connection initMySQL(){
+        getLogger().info("Connecting to Database");
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        try(Connection conn = DriverManager.getConnection(getConfig().getString("mysql.DB_URL"), getConfig().getString("mysql.DB_USER"), getConfig().getString("mysql.DB_PASS"))){
+            getLogger().info("Connected to Database");
+
+            return conn;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+    }
+
+    private void initMongoDB(){
+        getLogger().info("Connecting to Database");
+        this.mongoClient = MongoClients.create(Objects.requireNonNull(getConfig().getString("mongodb.mongourl")));
+        this.mongoDatabase = mongoClient.getDatabase(Objects.requireNonNull(getConfig().getString("mongodb.database")));
+        getLogger().info("Connected to Database");
+    }
+
+    private PlaytimeConfig initFileDatabase() {
+        getLogger().info("Connecting to File Database");
+        PlaytimeConfig playtimeConfig = new PlaytimeConfig(this, "playtime.yml");
+        getLogger().info("Connected to File Database");
+        return playtimeConfig;
+    }
+
+    public MongoDatabase getMongoDatabase() {
+        return mongoDatabase;
+    }
+
+    public JDA getJDA() {
+        return jda;
+    }
+
+    public static String getPrefix() {
+        return prefix;
+    }
+
+    public LuckPerms getLPAPI() {
+        return lpapi;
+    }
+
+    public String getMessage(String path) {
+        return messageConfig.getYaml().getString(path).replace("{prefix}", getPrefix()).replace("\\n", System.lineSeparator());
     }
 }

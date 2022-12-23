@@ -13,6 +13,9 @@ bungeecord: false
 # The file which is used for the messages.
 messages: en-EN-messages.yml
 
+# StorageTypes: MongoDB, file, MySQL
+storagetype: file
+
 modules:
   mcchat:
     # Enables the Minecraft-Discord chat in the discord server.
@@ -47,6 +50,12 @@ mongodb:
 
   # The Collection which is used for the BanSystem (if enabled).
   bans: 'bans'
+
+mysql:
+  DB_URL: ''
+  DB_USER: ''
+  DB_PASS: ''
+  DB_NAME: ''
 
 ban:
   '1':
