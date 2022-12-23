@@ -16,7 +16,7 @@ public class UnbanCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         UUID senderUUID = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
-        if(sender.hasPermission("serversystem.unban")) {
+        if(!sender.hasPermission("serversystem.unban")) {
             sender.sendMessage(ServerSystem.getInstance().getMessage("notallowed"));
             return false;
         }
@@ -24,14 +24,13 @@ public class UnbanCommand implements CommandExecutor {
             try {
                 int _id = Integer.parseInt(strings[0]);
                 String reason = strings.length > 1 ? strings[1] : null;
-                Document document = ServerSystem.getInstance().getMongoDatabase().getCollection(ServerSystem.getInstance().getConfig().getString("mongodb.bans"))
-                        .find(Filters.and(Filters.eq("_id", _id), Filters.eq("type", "ban"))).first();
-                if (Objects.nonNull(document)) {
-                    ServerSystem.getInstance().getBanManager().unban(_id, senderUUID, UUID.fromString(document.getString("bannedUUID")), reason);
-                    sender.sendMessage(ServerSystem.getInstance().getMessage("unbansucceeded"));
-                } else {
-                    sender.sendMessage(ServerSystem.getInstance().getMessage("unbanidnotexist"));
-                }
+
+                    if (Objects.nonNull(ServerSystem.getInstance().getBanManager().unBanIDExist(_id))) {
+                        ServerSystem.getInstance().getBanManager().unban(_id, senderUUID, UUID.fromString(ServerSystem.getInstance().getBanManager().unBanIDExist(_id)), reason);
+                        sender.sendMessage(ServerSystem.getInstance().getMessage("unbansucceeded"));
+                    } else {
+                        sender.sendMessage(ServerSystem.getInstance().getMessage("unbanidnotexist"));
+                    }
 
             } catch (NumberFormatException e) {
                 sender.sendMessage(ServerSystem.getInstance().getMessage("idnumber"));

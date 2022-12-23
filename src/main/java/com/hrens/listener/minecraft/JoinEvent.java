@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.awt.*;
+import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,14 +30,7 @@ public class JoinEvent implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
         if (serverSystem.module_bansystem && !serverSystem.getConfig().getBoolean("bungeecord") && serverSystem.getBanManager().isBanned(p.getUniqueId())){
-            Document document = bans.find(Filters.and(Filters.eq("type", "ban"), Filters.not(Filters.lt("end", System.currentTimeMillis())), Filters.eq("bannedUUID", p.getUniqueId().toString()))).first();
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-            String s = formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(document.getLong("end")), TimeZone.getDefault().toZoneId()));
-            p.kickPlayer(serverSystem.getMessage("youarebanned")
-                    .replace("{id}", String.valueOf(document.getInteger("_id")))
-                    .replace("{reason}", serverSystem.getConfig().getString("mute." + document.getInteger("reason") + ".reason"))
-                    .replace("{date}", s));
+            serverSystem.getBanManager().onJoin(p);
         } else {
             event.setJoinMessage(serverSystem.getMessage("joinmessage").replace("{player}", p.getName()));
             event.setJoinMessage("§a» §7" + p.getName());

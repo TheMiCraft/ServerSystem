@@ -16,7 +16,7 @@ public class UnmuteCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         UUID senderUUID = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
-        if(sender.hasPermission("serversystem.unmute")) {
+        if(!sender.hasPermission("serversystem.unmute")) {
             sender.sendMessage(ServerSystem.getInstance().getMessage("notallowed"));
             return false;
         }
@@ -24,10 +24,8 @@ public class UnmuteCommand implements CommandExecutor {
             try {
                 int _id = Integer.parseInt(strings[0]);
                 String reason = strings.length > 1 ? strings[1] : null;
-                Document document = ServerSystem.getInstance().getMongoDatabase().getCollection(ServerSystem.getInstance().getConfig().getString("mongodb.bans"))
-                        .find(Filters.and(Filters.eq("_id", _id), Filters.eq("type", "mute"))).first();
-                if (Objects.nonNull(document)) {
-                    ServerSystem.getInstance().getBanManager().unmute(_id, senderUUID, UUID.fromString(document.getString("bannedUUID")), reason);
+                if (Objects.nonNull(ServerSystem.getInstance().getBanManager().unMuteIDExist(_id))) {
+                    ServerSystem.getInstance().getBanManager().unban(_id, senderUUID, UUID.fromString(ServerSystem.getInstance().getBanManager().unMuteIDExist(_id)), reason);
                     sender.sendMessage(ServerSystem.getInstance().getMessage("unmutesucceeded"));
                 } else {
                     sender.sendMessage(ServerSystem.getInstance().getMessage("unmuteidnotexist"));

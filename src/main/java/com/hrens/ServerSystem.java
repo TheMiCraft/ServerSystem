@@ -107,8 +107,8 @@ public class ServerSystem extends JavaPlugin {
     }
 
     public void initBanSystem(){
-        logManager = new LogManager();
-        banManager = new BanManager();
+        logManager = new LogManager(storageType);
+        banManager = new BanManager(storageType);
 
         PluginCommand unbanCommand = getCommand("unban");
         unbanCommand.setExecutor(new UnbanCommand());
@@ -142,7 +142,6 @@ public class ServerSystem extends JavaPlugin {
     }
 
     public void initPlaytime(){
-        System.out.println(4566);
         this.playtimeUtils = new PlaytimeUtils(getConfig().getString("server"), storageType, mongoDatabase, connection, fileDB, getConfig().getString("mysql.DB_NAME"));
         pluginManager.registerEvents(new MoveEvent(this), this);
     }

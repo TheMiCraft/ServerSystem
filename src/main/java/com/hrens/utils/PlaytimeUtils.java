@@ -27,7 +27,6 @@ public class PlaytimeUtils {
     Map<UUID, Long> lastmove;
 
     public PlaytimeUtils(String servername, ServerSystem.StorageType storageType, @Nullable MongoDatabase mongoDatabase, @Nullable Connection connection, @Nullable PlaytimeConfig fileDB, @Nullable String mysql_dbname) {
-        System.out.println(1);
         this.storageType = storageType;
         this.servername = servername;
         this.mysql_dbname = mysql_dbname;
@@ -39,13 +38,10 @@ public class PlaytimeUtils {
 
         switch (storageType) {
             case File:
-                System.out.println("file");
                 break;
             case MySQL:
-                System.out.println(mysql_dbname);
                 assert connection != null;
                 try {
-                    System.out.println(connection.isClosed());
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -60,7 +56,6 @@ public class PlaytimeUtils {
                 collection = mongoDatabase.getCollection("playtime");
                 break;
         }
-        System.out.println(123);
     }
     public void playerJoin(UUID uuid){
         jointime.put(uuid, System.currentTimeMillis());
@@ -94,14 +89,14 @@ public class PlaytimeUtils {
                         PreparedStatement stmt;
                         if (exists) {
                             stmt = connection.prepareStatement("UPDATE playtime SET time_" + servername + " = ?, afk_" + servername + " = ? WHERE uuid = ?");
-                            stmt.setLong(1, (System.currentTimeMillis() - jointime.get(uuid) - this.afktime.get(uuid)));
-                            stmt.setLong(2, this.afktime.get(uuid));
+                            stmt.setLong(1, (System.currentTimeMillis() - (Objects.nonNull(jointime.get(uuid)) ? jointime.get(uuid) : System.currentTimeMillis()) - (Objects.nonNull(this.afktime.get(uuid)) ? this.afktime.get(uuid) : 0L)));
+                            stmt.setLong(2, Objects.nonNull(this.afktime.get(uuid)) ? this.afktime.get(uuid) : 0L);
                             stmt.setString(3, uuid.toString());
                         } else {
                             stmt = connection.prepareStatement("INSERT INTO playtime (uuid, time_" + servername + ", afk_" + servername + ") VALUES (?, ?, ?)");
                             stmt.setString(1, uuid.toString());
-                            stmt.setLong(2, (System.currentTimeMillis() - jointime.get(uuid) - this.afktime.get(uuid)));
-                            stmt.setLong(3,  this.afktime.get(uuid));
+                            stmt.setLong(1, (System.currentTimeMillis() - (Objects.nonNull(jointime.get(uuid)) ? jointime.get(uuid) : System.currentTimeMillis()) - (Objects.nonNull(this.afktime.get(uuid)) ? this.afktime.get(uuid) : 0L)));
+                            stmt.setLong(2, Objects.nonNull(this.afktime.get(uuid)) ? this.afktime.get(uuid) : 0L);
                         }
                         stmt.executeUpdate();
                     }
