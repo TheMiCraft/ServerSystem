@@ -42,10 +42,6 @@ public class PlaytimeUtils {
             case MySQL:
                 assert connection != null;
                 try {
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
-                }
-                try {
                     this.connection = DriverManager.getConnection(ServerSystem.getInstance().getConfig().getString("mysql.DB_URL"), ServerSystem.getInstance().getConfig().getString("mysql.DB_USER"), ServerSystem.getInstance().getConfig().getString("mysql.DB_PASS"));
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();

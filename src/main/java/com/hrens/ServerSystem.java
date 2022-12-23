@@ -53,7 +53,8 @@ public class ServerSystem extends JavaPlugin {
     private BanManager banManager;
     PlaytimeUtils playtimeUtils;
     StorageType storageType;
-    private PlaytimeConfig fileDB;
+    StorageType banstorageType;
+    private PlaytimeConfig fileDBplaytime;
 
     @Override
     public void onEnable() {
@@ -67,13 +68,14 @@ public class ServerSystem extends JavaPlugin {
         saveConfig();
         getLogger().info("Config loaded");
         storageType = StorageType.fromString(getConfig().getString("storagetype"));
+        banstorageType = StorageType.fromString(getConfig().getString("banstoragetype"));
         assert storageType != null;
         if(storageType.equals(StorageType.MongoDB)){
             initMongoDB();
         } else if(storageType.equals(StorageType.MySQL)){
             this.connection = initMySQL();
         } else if(storageType.equals(StorageType.File)){
-            this.fileDB = initFileDatabase();
+            this.fileDBplaytime = initFileDatabase();
         }
         this.mongoClient = MongoClients.create(Objects.requireNonNull(getConfig().getString("mongodb.mongourl")));
         this.mongoDatabase = mongoClient.getDatabase(Objects.requireNonNull(getConfig().getString("mongodb.database")));
@@ -107,8 +109,8 @@ public class ServerSystem extends JavaPlugin {
     }
 
     public void initBanSystem(){
-        logManager = new LogManager(storageType);
-        banManager = new BanManager(storageType);
+        logManager = new LogManager(banstorageType);
+        banManager = new BanManager(banstorageType);
 
         PluginCommand unbanCommand = getCommand("unban");
         unbanCommand.setExecutor(new UnbanCommand());
@@ -142,7 +144,7 @@ public class ServerSystem extends JavaPlugin {
     }
 
     public void initPlaytime(){
-        this.playtimeUtils = new PlaytimeUtils(getConfig().getString("server"), storageType, mongoDatabase, connection, fileDB, getConfig().getString("mysql.DB_NAME"));
+        this.playtimeUtils = new PlaytimeUtils(getConfig().getString("server"), storageType, mongoDatabase, connection, fileDBplaytime, getConfig().getString("mysql.DB_NAME"));
         pluginManager.registerEvents(new MoveEvent(this), this);
     }
     public enum StorageType {

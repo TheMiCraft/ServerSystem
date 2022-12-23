@@ -14,7 +14,10 @@ bungeecord: false
 messages: en-EN-messages.yml
 
 # StorageTypes: MongoDB, file, MySQL
-storagetype: file
+storagetype: mongodb
+
+# Ban-StorageTypes: MongoDB, MySQL
+banstoragetype: mongodb
 
 modules:
   mcchat:
