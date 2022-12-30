@@ -138,6 +138,7 @@ public class ServerSystem extends JavaPlugin {
 
     public void initMCChat(){
         pluginManager.registerEvents(new AdvancementEvent(this), this);
+        pluginManager.registerEvents(new DeathEvent(this), this);
         getLogger().info("Starting Discord Bot...");
         JDABuilder builder = JDABuilder.createLight(getConfig().getString("modules.mcchat.token"));
         builder.setActivity(Activity.playing(getConfig().getString("activity")));

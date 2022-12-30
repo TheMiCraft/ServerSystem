@@ -17,6 +17,7 @@ public class MessageRecieveEvent extends ListenerAdapter {
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
         String id = e.getChannel().getId();
         if(id.equals(serverSystem.getConfig().getString("modules.mcchat.chatid"))){
+            if(e.getAuthor().isBot()) return;
             Bukkit.broadcastMessage(serverSystem.getMessage("dctomcmsg").replace("{author}", e.getAuthor().getName()).replace("{message}", e.getMessage().getContentRaw()));
         }
     }
