@@ -17,10 +17,8 @@ import java.util.TimeZone;
 
 public class ChatEvent implements Listener {
     ServerSystem serverSystem;
-    MongoCollection<Document> mutes;
     public ChatEvent(ServerSystem serverSystem) {
         this.serverSystem = serverSystem;
-        mutes = serverSystem.getMongoDatabase().getCollection(serverSystem.getConfig().getString("mongodb.bans"));
     }
 
     @EventHandler
@@ -28,13 +26,7 @@ public class ChatEvent implements Listener {
         Player p = e.getPlayer();
         if(serverSystem.getBanManager().isMuted(p.getUniqueId())){
             e.setCancelled(true);
-            Document document = mutes.find(Filters.and(Filters.eq("type", "mute"), Filters.not(Filters.lt("end", System.currentTimeMillis())), Filters.eq("bannedUUID", p.getUniqueId().toString()))).first();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-            String s = formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(document.getLong("end")), TimeZone.getDefault().toZoneId()));
-            p.sendMessage(serverSystem.getMessage("youaremuted")
-                    .replace("{id}", String.valueOf(document.getInteger("_id")))
-                    .replace("{reason}", serverSystem.getConfig().getString("mute." + document.getInteger("reason") + ".reason"))
-                    .replace("{date}", s));
+            serverSystem.getBanManager().onChat(e);
         } else {
             String prefix = "";
             String suffix = "";

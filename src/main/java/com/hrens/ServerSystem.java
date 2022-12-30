@@ -52,7 +52,7 @@ public class ServerSystem extends JavaPlugin {
     private LogManager logManager;
     private BanManager banManager;
     PlaytimeUtils playtimeUtils;
-    StorageType storageType;
+    StorageType playtimestorageType;
     StorageType banstorageType;
     private PlaytimeConfig fileDBplaytime;
 
@@ -67,22 +67,27 @@ public class ServerSystem extends JavaPlugin {
         cfg.options().copyDefaults(true);
         saveConfig();
         getLogger().info("Config loaded");
-        storageType = StorageType.fromString(getConfig().getString("storagetype"));
+        playtimestorageType = StorageType.fromString(getConfig().getString("playtimestoragetype"));
         banstorageType = StorageType.fromString(getConfig().getString("banstoragetype"));
-        assert storageType != null;
-        if(storageType.equals(StorageType.MongoDB)){
-            initMongoDB();
-        } else if(storageType.equals(StorageType.MySQL)){
-            this.connection = initMySQL();
-        } else if(storageType.equals(StorageType.File)){
-            this.fileDBplaytime = initFileDatabase();
-        }
-        this.mongoClient = MongoClients.create(Objects.requireNonNull(getConfig().getString("mongodb.mongourl")));
-        this.mongoDatabase = mongoClient.getDatabase(Objects.requireNonNull(getConfig().getString("mongodb.database")));
         messageConfig = new MessageConfig(this, getConfig().getString("messages"));
         module_mcchat = getConfig().getBoolean("modules.mcchat.enabled");
         module_playtime = getConfig().getBoolean("modules.playtime.enabled");
         module_bansystem = getConfig().getBoolean("modules.bansystem.enabled");
+        if(module_playtime && playtimestorageType.equals(StorageType.MongoDB)){
+            initMongoDB();
+        } else if(module_playtime && playtimestorageType.equals(StorageType.MySQL)){
+            this.connection = initMySQL();
+        } else if(module_playtime && playtimestorageType.equals(StorageType.File)){
+            this.fileDBplaytime = initFileDatabase();
+        }
+        if(module_bansystem && banstorageType.equals(StorageType.MongoDB)){
+            initMongoDB();
+        } else if(module_bansystem && banstorageType.equals(StorageType.MySQL) && module_bansystem){
+            initMySQL();
+        } else if(module_bansystem){
+            throw new IllegalArgumentException("StorageType must be MongoDB or MySQL.");
+        }
+
         bungeecord = getConfig().getBoolean("bungeecord");
         prefix = getConfig().getString("prefix");
         pluginManager = Bukkit.getPluginManager();
@@ -144,7 +149,7 @@ public class ServerSystem extends JavaPlugin {
     }
 
     public void initPlaytime(){
-        this.playtimeUtils = new PlaytimeUtils(getConfig().getString("server"), storageType, mongoDatabase, connection, fileDBplaytime, getConfig().getString("mysql.DB_NAME"));
+        this.playtimeUtils = new PlaytimeUtils(getConfig().getString("server"), playtimestorageType, mongoDatabase, connection, fileDBplaytime, getConfig().getString("mysql.DB_NAME"));
         pluginManager.registerEvents(new MoveEvent(this), this);
     }
     public enum StorageType {

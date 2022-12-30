@@ -19,11 +19,9 @@ import java.util.TimeZone;
 
 public class JoinEvent implements Listener {
     ServerSystem serverSystem;
-    MongoCollection<Document> bans;
 
     public JoinEvent(ServerSystem serverSystem) {
         this.serverSystem = serverSystem;
-        bans = serverSystem.getMongoDatabase().getCollection(serverSystem.getConfig().getString("mongodb.bans"));
     }
 
     @EventHandler

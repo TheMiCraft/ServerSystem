@@ -8,6 +8,7 @@ import org.bson.conversions.Bson;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.security.SecureRandom;
 import java.sql.*;
@@ -28,7 +29,7 @@ public class BanManager {
         this.storageType = storageType;
         switch (storageType) {
             case MongoDB:
-                banned = ServerSystem.getInstance().getMongoDatabase().getCollection(ServerSystem.getInstance().getConfig().getString("mongodb.bans"));
+                banned = ServerSystem.getInstance().getMongoDatabase().getCollection("bans");
             case MySQL:
                 try {
                     this.connection = DriverManager.getConnection(ServerSystem.getInstance().getConfig().getString("mysql.DB_URL"), ServerSystem.getInstance().getConfig().getString("mysql.DB_USER"), ServerSystem.getInstance().getConfig().getString("mysql.DB_PASS"));
@@ -269,6 +270,39 @@ public class BanManager {
 
             } catch (SQLException e){
                 e.printStackTrace();
+            }
+        }
+    }
+    public void onChat(AsyncPlayerChatEvent e){
+        if(storageType.equals(ServerSystem.StorageType.MongoDB)) {
+            Document document = banned.find(Filters.and(Filters.eq("type", "mute"), Filters.not(Filters.lt("end", System.currentTimeMillis())), Filters.eq("bannedUUID",e.getPlayer().getUniqueId().toString()))).first();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            String s = formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(document.getLong("end")), TimeZone.getDefault().toZoneId()));
+            e.getPlayer().sendMessage(ServerSystem.getInstance().getMessage("youaremuted")
+                    .replace("{id}", String.valueOf(document.getInteger("_id")))
+                    .replace("{reason}", ServerSystem.getInstance().getConfig().getString("mute." + document.getInteger("reason") + ".reason"))
+                    .replace("{date}", s));
+        } else if(storageType.equals(ServerSystem.StorageType.MySQL)){
+            try {
+                PreparedStatement stmt = connection.prepareStatement("SELECT * FROM bans WHERE type = 'ban' AND end > ? AND bannedUUID = ? LIMIT 1");
+                stmt.setLong(1, System.currentTimeMillis());
+                stmt.setString(2, e.getPlayer().getUniqueId().toString());
+                ResultSet rs = stmt.executeQuery();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                if (rs.next()) {
+                    String s = formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getLong("end")), TimeZone.getDefault().toZoneId()));
+                    String id = rs.getString("_id");
+                    int reasonCode = rs.getInt("reason");
+                    String reason = ServerSystem.getInstance().getConfig().getString("mute." + reasonCode + ".reason");
+                    e.getPlayer().sendMessage(ServerSystem.getInstance().getMessage("youaremuted")
+                            .replace("{id}", id)
+                            .replace("{reason}", reason)
+                            .replace("{date}", s));
+                }
+
+
+            } catch (SQLException ex){
+                ex.printStackTrace();
             }
         }
     }

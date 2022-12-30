@@ -13,10 +13,10 @@ bungeecord: false
 # The file which is used for the messages.
 messages: en-EN-messages.yml
 
-# StorageTypes: MongoDB, file, MySQL
-storagetype: mongodb
+# Storagetype for the Playtime module (if enabled ) StorageTypes: MongoDB, file, MySQL
+playtimestoragetype: mongodb
 
-# Ban-StorageTypes: MongoDB, MySQL
+# Storagetype for the Bansystem module (if enabled ) Ban-StorageTypes: MongoDB, MySQL
 banstoragetype: mongodb
 
 modules:
@@ -47,12 +47,6 @@ mongodb:
 
   # The Database of the ServerSystem
   database: 'database'
-
-  # The Collection which is used for the Playtime (if enabled).
-  playtime: 'collection'
-
-  # The Collection which is used for the BanSystem (if enabled).
-  bans: 'bans'
 
 mysql:
   DB_URL: ''
