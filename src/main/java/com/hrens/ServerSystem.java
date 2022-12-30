@@ -1,11 +1,8 @@
 package com.hrens;
 
 import com.hrens.commands.*;
-import com.hrens.commands.tabcompleters.BanCompleter;
-import com.hrens.commands.tabcompleters.MuteCompleter;
-import com.hrens.commands.tabcompleters.UnbanCompleter;
-import com.hrens.commands.tabcompleters.UnmuteCompleter;
-import com.hrens.listener.discord.MessageRecieveEvent;
+import com.hrens.commands.tabcompleters.*;
+import com.hrens.listener.discord.*;
 import com.hrens.listener.minecraft.*;
 import com.hrens.utils.*;
 import com.mongodb.client.MongoClient;
@@ -87,17 +84,21 @@ public class ServerSystem extends JavaPlugin {
         } else if(module_bansystem){
             throw new IllegalArgumentException("StorageType must be MongoDB or MySQL.");
         }
-
         bungeecord = getConfig().getBoolean("bungeecord");
         prefix = getConfig().getString("prefix");
         pluginManager = Bukkit.getPluginManager();
-
         pluginManager.registerEvents(new JoinEvent(this), this);
         pluginManager.registerEvents(new LeaveEvent(this), this);
         pluginManager.registerEvents(new ChatEvent(this), this);
-        getCommand("heal").setExecutor(new HealCommand(this));
-        getCommand("feed").setExecutor(new FeedCommand(this));
-        getCommand("reboot").setExecutor(new RebootCommand(this));
+        PluginCommand healCommand = getCommand("heal");
+        assert healCommand != null;
+        healCommand.setExecutor(new HealCommand(this));
+        PluginCommand feedCommand = getCommand("heal");
+        assert feedCommand != null;
+        feedCommand.setExecutor(new FeedCommand(this));
+        PluginCommand rebootCommand = getCommand("reboot");
+        assert rebootCommand != null;
+        rebootCommand.setExecutor(new RebootCommand(this));
         if(Objects.nonNull(pluginManager.getPlugin("LuckPerms"))) {
             luckperms = true;
             RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
@@ -116,17 +117,20 @@ public class ServerSystem extends JavaPlugin {
     public void initBanSystem(){
         logManager = new LogManager(banstorageType);
         banManager = new BanManager(banstorageType);
-
         PluginCommand unbanCommand = getCommand("unban");
+        assert unbanCommand != null;
         unbanCommand.setExecutor(new UnbanCommand());
         unbanCommand.setTabCompleter(new UnbanCompleter());
         PluginCommand banCommand = getCommand("ban");
+        assert banCommand != null;
         banCommand.setExecutor(new BanCommand());
         banCommand.setTabCompleter(new BanCompleter());
         PluginCommand muteCommand = getCommand("mute");
+        assert muteCommand != null;
         muteCommand.setExecutor(new MuteCommand());
         muteCommand.setTabCompleter(new MuteCompleter());
         PluginCommand unmuteCommand = getCommand("unmute");
+        assert unmuteCommand != null;
         unmuteCommand.setExecutor(new UnmuteCommand());
         unmuteCommand.setTabCompleter(new UnmuteCompleter());
         getCommand("check").setExecutor(new CheckCommand());
@@ -138,7 +142,7 @@ public class ServerSystem extends JavaPlugin {
         JDABuilder builder = JDABuilder.createLight(getConfig().getString("modules.mcchat.token"));
         builder.setActivity(Activity.playing(getConfig().getString("activity")));
         builder.setStatus(OnlineStatus.DO_NOT_DISTURB);
-        builder.setEnabledIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES);
+        builder.setEnabledIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES);
         builder.setMemberCachePolicy(MemberCachePolicy.ALL);
         builder.addEventListeners(new MessageRecieveEvent(this));
         try {
