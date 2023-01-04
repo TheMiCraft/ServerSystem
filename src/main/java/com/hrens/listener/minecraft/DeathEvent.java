@@ -17,7 +17,7 @@ public class DeathEvent implements Listener {
     }
 
     @EventHandler
-    public void onJoin(PlayerDeathEvent event) {
+    public void onDeath(PlayerDeathEvent event) {
         Player p = event.getEntity();
         if (serverSystem.module_mcchat) {
                 serverSystem.getJDA().getTextChannelById(serverSystem.getConfig().getString("modules.mcchat.chatid")).sendMessageEmbeds(

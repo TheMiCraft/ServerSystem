@@ -24,7 +24,7 @@ public class ChatEvent implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e){
         Player p = e.getPlayer();
-        if(serverSystem.getBanManager().isMuted(p.getUniqueId())){
+        if(serverSystem.module_bansystem && serverSystem.getBanManager().isMuted(p.getUniqueId())){
             e.setCancelled(true);
             serverSystem.getBanManager().onChat(e);
         } else {

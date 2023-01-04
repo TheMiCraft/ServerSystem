@@ -84,9 +84,21 @@ public class ServerSystem extends JavaPlugin {
         } else if(module_bansystem){
             throw new IllegalArgumentException("StorageType must be MongoDB or MySQL.");
         }
+
         bungeecord = getConfig().getBoolean("bungeecord");
         prefix = getConfig().getString("prefix");
         pluginManager = Bukkit.getPluginManager();
+        if(module_mcchat) initMCChat();
+        if(module_playtime) initPlaytime();
+        if(module_playtime) playtimeUtils.reload(Bukkit.getOnlinePlayers());
+        if(module_bansystem) initBanSystem();
+        if(Objects.nonNull(pluginManager.getPlugin("LuckPerms"))) {
+            luckperms = true;
+            RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+            if (provider != null) {
+                lpapi = provider.getProvider();
+            }
+        }
         pluginManager.registerEvents(new JoinEvent(this), this);
         pluginManager.registerEvents(new LeaveEvent(this), this);
         pluginManager.registerEvents(new ChatEvent(this), this);
@@ -99,17 +111,6 @@ public class ServerSystem extends JavaPlugin {
         PluginCommand rebootCommand = getCommand("reboot");
         assert rebootCommand != null;
         rebootCommand.setExecutor(new RebootCommand(this));
-        if(Objects.nonNull(pluginManager.getPlugin("LuckPerms"))) {
-            luckperms = true;
-            RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-            if (provider != null) {
-                lpapi = provider.getProvider();
-            }
-        }
-        if(module_mcchat) initMCChat();
-        if(module_playtime) initPlaytime();
-        if(module_playtime) playtimeUtils.reload(Bukkit.getOnlinePlayers());
-        if(module_bansystem) initBanSystem();
         if(bungeecord) getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getLogger().info("Loaded Serversystem");
     }
